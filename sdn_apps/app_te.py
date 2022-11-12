@@ -58,8 +58,9 @@ class TEApp(NetworkApp):
     def provision_pass_by_paths(self):
         self.rules = []
         # TODO: complete
-        for r in self.pass_by_paths_obj:
-            match_pattern = r['match_pattern']
+        for obj in self.pass_by_paths_obj:
+            print(obj['symmetric'])
+            match_pattern = obj['match_pattern']
             pattern = MatchPattern(src_mac=match_pattern['src_mac'],
                                     dst_mac=match_pattern['dst_mac'],
                                     mac_proto=match_pattern['mac_proto'],
@@ -71,11 +72,29 @@ class TEApp(NetworkApp):
                                     in_port=match_pattern['in_port'])
             
             path = []
-            for s in r['switches']:
+            for s in obj['switches']:
                 path.append(str(s))
             rules = self.calculate_rules_for_path(path, pattern, include_in_port=True)
             for r in rules:
                 self.add_rule(r)
+                
+            if obj['symmetric'] == True:
+                path = []
+                for s in reversed(obj['switches']):
+                    path.append(str(s))
+                    
+                pattern = MatchPattern(src_mac=match_pattern['src_mac'],
+                                    dst_mac=match_pattern['dst_mac'],
+                                    mac_proto=match_pattern['mac_proto'],
+                                    ip_proto=match_pattern['ip_proto'],
+                                    src_ip=match_pattern['dst_ip'],
+                                    dst_ip=match_pattern['src_ip'],
+                                    src_port=match_pattern['src_port'],
+                                    dst_port=match_pattern['dst_port'],
+                                    in_port=match_pattern['in_port'])
+                rules = self.calculate_rules_for_path(path, pattern, include_in_port=True)
+                for r in rules:
+                    self.add_rule(r)
               
             self.send_openflow_rules()  
             
