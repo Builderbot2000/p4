@@ -31,7 +31,13 @@ class TEApp(NetworkApp):
     def from_json(self):
         with open('%s'% self.json_file) as f:
             # TODO: complete
-            pass
+            rules = json.load(f)
+            for obj in rules.get('pass_by_paths'):
+                self.add_pass_by_path_obj(obj)
+            for obj in rules.get('min_latency'):
+                self.add_min_latency_obj(obj)
+            for obj in rules.get('max_bandwidth'):
+                self.add_max_bandwidth_obj(obj)
     
     # Translates the TE objectives to the `json_file`
     def to_json(self, json_file):
@@ -52,6 +58,27 @@ class TEApp(NetworkApp):
     def provision_pass_by_paths(self):
         self.rules = []
         # TODO: complete
+        for r in self.pass_by_paths_obj:
+            match_pattern = r['match_pattern']
+            pattern = MatchPattern(src_mac=match_pattern['src_mac'],
+                                    dst_mac=match_pattern['dst_mac'],
+                                    mac_proto=match_pattern['mac_proto'],
+                                    ip_proto=match_pattern['ip_proto'],
+                                    src_ip=match_pattern['src_ip'],
+                                    dst_ip=match_pattern['dst_ip'],
+                                    src_port=match_pattern['src_port'],
+                                    dst_port=match_pattern['dst_port'],
+                                    in_port=match_pattern['in_port'])
+            
+            path = []
+            for s in r['switches']:
+                path.append(str(s))
+            rules = self.calculate_rules_for_path(path, pattern, include_in_port=True)
+            for r in rules:
+                self.add_rule(r)
+              
+            self.send_openflow_rules()  
+            
 
     # This function translates the objectives in `self.min_latency_obj` to a list of Rules in `self.rules`
     # It should: 
