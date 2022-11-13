@@ -22,7 +22,8 @@ pattern = MatchPattern(ip_proto=17)
 min_lat_obj = MinLatencyObjective(pattern, src_switch=1, dst_switch=6, symmetric=True)
 app_te.add_min_latency_obj(min_lat_obj)
 
-# Obj 3: All UDP traffic from switch 1 to switch 6 and in the reverse direction should go through max-bandwidth paths
+# Obj 4: All UDP traffic from switch 1 to switch 6 and in the reverse direction should go through max-bandwidth paths
+# We can change the test case if we want later
 pattern = MatchPattern(ip_proto=17)
 max_bw_obj = MaxBandwidthObjective(pattern, src_switch=1, dst_switch=6, symmetric=True)
 app_te.add_max_bandwidth_obj(max_bw_obj)
