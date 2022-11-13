@@ -51,9 +51,8 @@ for rule in new_app_te.rules:
 
 print()
 
-# Calculate the OpenFlow rules for MinLatency objectives
+# Calculate the OpenFlow rules for MaxBandwidth objectives
 new_app_te.provision_max_bandwidth_paths()
 print('Max-bandwidth Paths Rules:')
 for rule in new_app_te.rules:
     print(rule)
-
