@@ -120,6 +120,7 @@ class TEApp(NetworkApp):
                                     dst_port=match_pattern['dst_port'],
                                     in_port=match_pattern['in_port'])
             path = nx.shortest_path(self.topo, source=str(obj['src_switch']), target=str(obj['dst_switch']), weight='delay')
+            print(path)
             rules = self.calculate_rules_for_path(path, pattern, include_in_port=True)
             for r in rules:
                 self.add_rule(r)
@@ -137,6 +138,7 @@ class TEApp(NetworkApp):
                                     dst_port=match_pattern['dst_port'],
                                     in_port=match_pattern['in_port'])
                 path = nx.shortest_path(self.topo, source=str(obj['dst_switch']), target=str(obj['src_switch']), weight='delay')
+                print(path)
                 rules = self.calculate_rules_for_path(path, pattern, include_in_port=True)
                 for r in rules:
                     self.add_rule(r)
@@ -151,7 +153,71 @@ class TEApp(NetworkApp):
     #   handle traffic in reverse direction when `symmetric` is True 
     #   call `self.send_openflow_rules()` at the end
     def provision_max_bandwidth_paths(self):
-        pass
+        self.rules = []
+        # TODO: complete
+        for obj in self.min_latency_obj:
+            match_pattern = obj['match_pattern']
+            pattern = MatchPattern(src_mac=match_pattern['src_mac'],
+                                    dst_mac=match_pattern['dst_mac'],
+                                    mac_proto=match_pattern['mac_proto'],
+                                    ip_proto=match_pattern['ip_proto'],
+                                    src_ip=match_pattern['src_ip'],
+                                    dst_ip=match_pattern['dst_ip'],
+                                    src_port=match_pattern['src_port'],
+                                    dst_port=match_pattern['dst_port'],
+                                    in_port=match_pattern['in_port'])
+            paths = nx.all_simple_paths(self.topo, source=str(obj['src_switch']), target=str(obj['dst_switch']))
+            candidates = []
+            for p in paths:
+                # print(p)
+                min_bw = 1000000000
+                for n in range(len(p)-1):
+                    bw = self.topo[p[n]][p[n+1]]['bw']
+                    if bw < min_bw:
+                        min_bw = bw
+                # print("min_bw: " + str(min_bw))
+                candidates.append([p, min_bw])
+                # print(candidates)
+            path = max(candidates, key=lambda k: k[1])
+            # print(path)
+                    
+            rules = self.calculate_rules_for_path(path[0], pattern, include_in_port=True)
+            for r in rules:
+                self.add_rule(r)
+                
+            if obj['symmetric'] == True:
+                path = []
+                    
+                pattern = MatchPattern(src_mac=match_pattern['src_mac'],
+                                    dst_mac=match_pattern['dst_mac'],
+                                    mac_proto=match_pattern['mac_proto'],
+                                    ip_proto=match_pattern['ip_proto'],
+                                    src_ip=match_pattern['dst_ip'],
+                                    dst_ip=match_pattern['src_ip'],
+                                    src_port=match_pattern['src_port'],
+                                    dst_port=match_pattern['dst_port'],
+                                    in_port=match_pattern['in_port'])
+                
+                paths = nx.all_simple_paths(self.topo, source=str(obj['dst_switch']), target=str(obj['src_switch']))
+                candidates = []
+                for p in paths:
+                    # print(p)
+                    min_bw = 1000000000
+                    for n in range(len(p)-1):
+                        bw = self.topo[p[n]][p[n+1]]['bw']
+                        if bw < min_bw:
+                            min_bw = bw
+                    # print("min_bw: " + str(min_bw))
+                    candidates.append([p, min_bw])
+                    # print(candidates)
+                path = max(candidates, key=lambda k: k[1])
+                # print(path)
+                
+                rules = self.calculate_rules_for_path(path[0], pattern, include_in_port=True)
+                for r in rules:
+                    self.add_rule(r)
+                
+        self.send_openflow_rules() 
     
     # BONUS: Used to react to changes in the network (the controller notifies the App)
     def on_notified(self, **kwargs):
