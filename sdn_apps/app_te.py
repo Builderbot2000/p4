@@ -155,7 +155,7 @@ class TEApp(NetworkApp):
     def provision_max_bandwidth_paths(self):
         self.rules = []
         # TODO: complete
-        for obj in self.min_latency_obj:
+        for obj in self.max_bandwidth_obj:
             match_pattern = obj['match_pattern']
             pattern = MatchPattern(src_mac=match_pattern['src_mac'],
                                     dst_mac=match_pattern['dst_mac'],

@@ -146,7 +146,7 @@ class ControllerInterface(ControllerBase):
         controller.app_te.provision_min_latency_paths()
         return Response(status=200)
 
-    @route('prj', '/te/provision_max_bandwidth_paths', methods=['GET'])
+    @route('prj', '/te/provision_max_bandwidth_paths', methods=['GET', 'POST'])
     def te_provision_max_bandwidth_paths(self, req, **kwargs):
         controller = self.controller
         # BONUS
