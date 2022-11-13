@@ -108,6 +108,40 @@ class TEApp(NetworkApp):
     def provision_min_latency_paths(self):
         self.rules = []
         # TODO: complete
+        for obj in self.min_latency_obj:
+            match_pattern = obj['match_pattern']
+            pattern = MatchPattern(src_mac=match_pattern['src_mac'],
+                                    dst_mac=match_pattern['dst_mac'],
+                                    mac_proto=match_pattern['mac_proto'],
+                                    ip_proto=match_pattern['ip_proto'],
+                                    src_ip=match_pattern['src_ip'],
+                                    dst_ip=match_pattern['dst_ip'],
+                                    src_port=match_pattern['src_port'],
+                                    dst_port=match_pattern['dst_port'],
+                                    in_port=match_pattern['in_port'])
+            path = nx.shortest_path(self.topo, source=str(obj['src_switch']), target=str(obj['dst_switch']), weight='delay')
+            rules = self.calculate_rules_for_path(path, pattern, include_in_port=True)
+            for r in rules:
+                self.add_rule(r)
+                
+            if obj['symmetric'] == True:
+                path = []
+                    
+                pattern = MatchPattern(src_mac=match_pattern['src_mac'],
+                                    dst_mac=match_pattern['dst_mac'],
+                                    mac_proto=match_pattern['mac_proto'],
+                                    ip_proto=match_pattern['ip_proto'],
+                                    src_ip=match_pattern['dst_ip'],
+                                    dst_ip=match_pattern['src_ip'],
+                                    src_port=match_pattern['src_port'],
+                                    dst_port=match_pattern['dst_port'],
+                                    in_port=match_pattern['in_port'])
+                path = nx.shortest_path(self.topo, source=str(obj['dst_switch']), target=str(obj['src_switch']), weight='delay')
+                rules = self.calculate_rules_for_path(path, pattern, include_in_port=True)
+                for r in rules:
+                    self.add_rule(r)
+                
+        self.send_openflow_rules()  
 
     # BONUS: 
     # This function translates the objectives in `self.max_bandwidth_obj` to a list of Rules in `self.rules`
