@@ -26,7 +26,7 @@ class NetworkApp(ABC):
     #       of_actions = [...]
     # Finally, it should call:
     #       self.of_controller.add_flow(datapath, match=of_match, actions=of_actions, priority=self.priority)
-    def send_openflow_rules_to_dp(self, rule, datapath):
+    def send_openflow_rules_to_dp(self, rule, datapath, delete=False):
         ofp = datapath.ofproto
         ofp_parser = datapath.ofproto_parser
         match_pattern = rule.match_pattern
@@ -68,22 +68,22 @@ class NetworkApp(ABC):
 
         of_match = ofp_parser.OFPMatch(**kwargs)
         if rule.action.action_type == ActionType.DROP:
-            self.of_controller.add_flow(datapath, match=of_match, actions=[], priority=self.priority)
+            self.of_controller.add_flow(datapath, match=of_match, actions=[], priority=self.priority, delete=delete)
         elif rule.action.action_type == ActionType.CONTROLLER:
             of_actions = [ofp_parser.OFPActionOutput(ofp.OFPP_CONTROLLER, ofp.OFPCML_NO_BUFFER)]
-            self.of_controller.add_flow(datapath, match=of_match, actions=of_actions, priority=self.priority)
+            self.of_controller.add_flow(datapath, match=of_match, actions=of_actions, priority=self.priority, delete=delete)
         elif rule.action.action_type == ActionType.FORWARD:
             of_actions = [ofp_parser.OFPActionOutput(rule.action.out_port)]
-            self.of_controller.add_flow(datapath, match=of_match, actions=of_actions, priority=self.priority)
+            self.of_controller.add_flow(datapath, match=of_match, actions=of_actions, priority=self.priority, delete=delete)
     
     # Send the OpenFlow rules in `self.rules` to corresponding switches
-    def send_openflow_rules(self):
+    def send_openflow_rules(self, delete=False):
         for rule in self.rules:
             dpid = rule.switch_id
             if self.of_controller:
                 datapath = self.of_controller.datapaths.get(dpid, None)
                 if datapath:
-                    self.send_openflow_rules_to_dp(rule, datapath)
+                    self.send_openflow_rules_to_dp(rule, datapath, delete)
     
     # Given a `path` and a `match_pattern` for every switch along the path:
     # Calculate the list of OpenFlow rules representing this path

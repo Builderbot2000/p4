@@ -217,13 +217,12 @@ class TEApp(NetworkApp):
     
     # BONUS: Used to react to changes in the network (the controller notifies the App)
     def on_notified(self, **kwargs):
+        self.send_openflow_rules(delete=True)
+        self.rules = []
         mode = kwargs['mode']
-        if (mode == 'pass_by'):
-            self.rules = []
+        if mode == 'pass_by':
             provision_pass_by_paths(self)
-        elif (mode == 'min_latency'):
-            self.rules = []
+        elif mode == 'min_latency':
             provision_min_latency_paths(self)
-        elif (mode == 'max_bandwidth'):
-            self.rules = []
+        elif mode == 'max_bandwidth':
             provision_max_bandwidth_paths(self)

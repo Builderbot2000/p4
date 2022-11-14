@@ -31,14 +31,21 @@ class SDNController(app_manager.RyuApp):
         self.app_l2 = None
         self.app_te = None
 
-    def add_flow(self, datapath, match, actions, priority, hard_timeout=0):
+    def add_flow(self, datapath, match, actions, priority, hard_timeout=0, delete=False):
         ofp = datapath.ofproto
         ofp_parser = datapath.ofproto_parser
 
         inst = [ofp_parser.OFPInstructionActions(ofp.OFPIT_APPLY_ACTIONS, actions)]
-        mod = ofp_parser.OFPFlowMod(datapath=datapath, priority=priority,
+        if delete == False: 
+            print("Adding flow...")
+            mod = ofp_parser.OFPFlowMod(datapath=datapath, priority=priority,
                                     hard_timeout=hard_timeout,
                                     match=match, instructions=inst)
+        else:
+            print("Deleting flow...")
+            mod = ofp_parser.OFPFlowMod(datapath=datapath, priority=priority,
+                                    hard_timeout=hard_timeout,
+                                    match=match, instructions=inst, command=OFPFC_DELETE)
         datapath.send_msg(mod)
 
     @set_ev_cls(ofp_event.EventOFPStateChange, [MAIN_DISPATCHER, DEAD_DISPATCHER])
