@@ -23,7 +23,10 @@ class FirewallApp(NetworkApp):
             rules = json.load(f, object_hook=parse_action)
             # TODO: complete
             for r in rules:
-                match_pattern = r['match_pattern']
+                print(r)
+                if len(r) == 0:
+                    print("r is empty!")
+                match_pattern = r.get('match_pattern')
                 pattern = MatchPattern(src_mac=match_pattern['src_mac'],
                                        dst_mac=match_pattern['dst_mac'],
                                        mac_proto=match_pattern['mac_proto'],
@@ -49,4 +52,6 @@ class FirewallApp(NetworkApp):
 
     # BONUS: Used to react to changes in the network (the controller notifies the App)
     def on_notified(self, **kwargs):
-        pass
+        self.rules = []
+        from_json(self)
+        calculate_firewall_rules(self)

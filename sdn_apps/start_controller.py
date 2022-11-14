@@ -52,6 +52,12 @@ class SDNController(app_manager.RyuApp):
             if datapath.id in self.datapaths:
                 self.logger.info('Unregister datapath: %016x', datapath.id)
                 del self.datapaths[datapath.id]
+        if self.app_l2:
+           self.app_l2.on_notified()
+        if self.app_fw:
+           self.app_fw.on_notified()
+        if self.app_te:
+           self.app_te.on_notified(mode=self.app_te.mode)
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def on_switch_features(self, ev):

@@ -42,4 +42,5 @@ class L2ConnectivityApp(NetworkApp):
     
     # BONUS: Used to react to changes in the network (the controller notifies the App)
     def on_notified(self, **kwargs):
-        pass
+        self.rules = []
+        calculate_connectivity_rules(self)

@@ -13,6 +13,7 @@ class TEApp(NetworkApp):
         self.pass_by_paths_obj = [] # a list of PassByPathObjective objects 
         self.min_latency_obj = [] # a list of MinLatencyObjective objects
         self.max_bandwidth_obj = [] # a list of MaxBandwidthObjective objects
+        self.mode = 'None'
     
     def add_pass_by_path_obj(self, pass_by_obj):
         self.pass_by_paths_obj.append(pass_by_obj)
@@ -94,7 +95,8 @@ class TEApp(NetworkApp):
                 for r in rules:
                     self.add_rule(r)
               
-        self.send_openflow_rules()  
+        self.send_openflow_rules()
+        self.mode = 'pass_by'
             
     # This function translates the objectives in `self.min_latency_obj` to a list of Rules in `self.rules`
     # It should: 
@@ -137,7 +139,8 @@ class TEApp(NetworkApp):
                 for r in rules:
                     self.add_rule(r)
                 
-        self.send_openflow_rules()  
+        self.send_openflow_rules() 
+        self.mode = 'min_latency' 
 
     # BONUS: 
     # This function translates the objectives in `self.max_bandwidth_obj` to a list of Rules in `self.rules`
@@ -210,7 +213,17 @@ class TEApp(NetworkApp):
                     self.add_rule(r)
                 
         self.send_openflow_rules() 
+        self.mode = 'max_bandwidth'
     
     # BONUS: Used to react to changes in the network (the controller notifies the App)
     def on_notified(self, **kwargs):
-        pass
+        mode = kwargs['mode']
+        if (mode == 'pass_by'):
+            self.rules = []
+            provision_pass_by_paths(self)
+        elif (mode == 'min_latency'):
+            self.rules = []
+            provision_min_latency_paths(self)
+        elif (mode == 'max_bandwidth'):
+            self.rules = []
+            provision_max_bandwidth_paths(self)
