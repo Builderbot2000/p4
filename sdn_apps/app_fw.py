@@ -53,6 +53,8 @@ class FirewallApp(NetworkApp):
     # BONUS: Used to react to changes in the network (the controller notifies the App)
     def on_notified(self, **kwargs):
         print("Recalculating firewall rules...")
+        if self.topo_file:
+            self.topo = nx.read_graphml(self.topo_file)
         self.send_openflow_rules(delete=True)
         self.rules = []
         from_json(self)
