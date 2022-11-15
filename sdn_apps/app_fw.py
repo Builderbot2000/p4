@@ -52,7 +52,8 @@ class FirewallApp(NetworkApp):
 
     # BONUS: Used to react to changes in the network (the controller notifies the App)
     def on_notified(self, **kwargs):
+        print("Recalculating firewall rules...")
         self.send_openflow_rules(delete=True)
         self.rules = []
         from_json(self)
-        calculate_firewall_rules(self)
+        self.calculate_firewall_rules()

@@ -45,7 +45,7 @@ class SDNController(app_manager.RyuApp):
             print("Deleting flow...")
             mod = ofp_parser.OFPFlowMod(datapath=datapath, priority=priority,
                                     hard_timeout=hard_timeout,
-                                    match=match, instructions=inst, command=OFPFC_DELETE)
+                                    match=match, instructions=inst, command=ofp.OFPFC_DELETE)
         datapath.send_msg(mod)
 
     @set_ev_cls(ofp_event.EventOFPStateChange, [MAIN_DISPATCHER, DEAD_DISPATCHER])
@@ -142,7 +142,9 @@ class ControllerInterface(ControllerBase):
         # Otherwise,
         #   Return status code 500
         if controller.app_te is None:
+            print("TE app not initialized!")
             return Response(status=500)
+        print("TE app called.")
         controller.app_te.provision_pass_by_paths()
         return Response(status=200)
         

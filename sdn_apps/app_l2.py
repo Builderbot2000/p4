@@ -42,6 +42,7 @@ class L2ConnectivityApp(NetworkApp):
     
     # BONUS: Used to react to changes in the network (the controller notifies the App)
     def on_notified(self, **kwargs):
+        print("Recalculating l2 rules...")
         self.send_openflow_rules(delete=True)
         self.rules = []
-        calculate_connectivity_rules(self)
+        self.calculate_connectivity_rules()

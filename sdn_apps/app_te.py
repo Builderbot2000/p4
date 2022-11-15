@@ -57,6 +57,7 @@ class TEApp(NetworkApp):
     #   handle traffic in reverse direction when `symmetric` is True 
     #   call `self.send_openflow_rules()` at the end
     def provision_pass_by_paths(self):
+        print("PROVISION BY PATHS")
         self.rules = []
         # TODO: complete
         for obj in self.pass_by_paths_obj:
@@ -217,12 +218,13 @@ class TEApp(NetworkApp):
     
     # BONUS: Used to react to changes in the network (the controller notifies the App)
     def on_notified(self, **kwargs):
+        print("Recalculating TE rules...")
         self.send_openflow_rules(delete=True)
         self.rules = []
         mode = kwargs['mode']
         if mode == 'pass_by':
-            provision_pass_by_paths(self)
+            self.provision_pass_by_paths()
         elif mode == 'min_latency':
-            provision_min_latency_paths(self)
+            self.provision_min_latency_paths()
         elif mode == 'max_bandwidth':
-            provision_max_bandwidth_paths(self)
+            self.provision_max_bandwidth_paths()
