@@ -23,7 +23,6 @@ class FirewallApp(NetworkApp):
             rules = json.load(f, object_hook=parse_action)
             # TODO: complete
             for r in rules:
-                print(r)
                 if len(r) == 0:
                     print("r is empty!")
                 match_pattern = r.get('match_pattern')
