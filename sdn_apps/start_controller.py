@@ -31,14 +31,21 @@ class SDNController(app_manager.RyuApp):
         self.app_l2 = None
         self.app_te = None
 
-    def add_flow(self, datapath, match, actions, priority, hard_timeout=0):
+    def add_flow(self, datapath, match, actions, priority, hard_timeout=0, delete=False):
         ofp = datapath.ofproto
         ofp_parser = datapath.ofproto_parser
 
         inst = [ofp_parser.OFPInstructionActions(ofp.OFPIT_APPLY_ACTIONS, actions)]
-        mod = ofp_parser.OFPFlowMod(datapath=datapath, priority=priority,
+        if delete == False: 
+            print("Adding flow...")
+            mod = ofp_parser.OFPFlowMod(datapath=datapath, priority=priority,
                                     hard_timeout=hard_timeout,
                                     match=match, instructions=inst)
+        else:
+            print("Deleting flow...")
+            mod = ofp_parser.OFPFlowMod(datapath=datapath, priority=priority,
+                                    hard_timeout=hard_timeout,
+                                    match=match, instructions=inst, command=ofp.OFPFC_DELETE)
         datapath.send_msg(mod)
 
     @set_ev_cls(ofp_event.EventOFPStateChange, [MAIN_DISPATCHER, DEAD_DISPATCHER])
@@ -52,6 +59,12 @@ class SDNController(app_manager.RyuApp):
             if datapath.id in self.datapaths:
                 self.logger.info('Unregister datapath: %016x', datapath.id)
                 del self.datapaths[datapath.id]
+        if self.app_l2:
+           self.app_l2.on_notified()
+        if self.app_fw:
+           self.app_fw.on_notified()
+        if self.app_te:
+           self.app_te.on_notified(mode=self.app_te.mode)
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def on_switch_features(self, ev):
@@ -129,7 +142,9 @@ class ControllerInterface(ControllerBase):
         # Otherwise,
         #   Return status code 500
         if controller.app_te is None:
+            print("TE app not initialized!")
             return Response(status=500)
+        print("TE app called.")
         controller.app_te.provision_pass_by_paths()
         return Response(status=200)
         
@@ -146,7 +161,7 @@ class ControllerInterface(ControllerBase):
         controller.app_te.provision_min_latency_paths()
         return Response(status=200)
 
-    @route('prj', '/te/provision_max_bandwidth_paths', methods=['GET'])
+    @route('prj', '/te/provision_max_bandwidth_paths', methods=['GET', 'POST'])
     def te_provision_max_bandwidth_paths(self, req, **kwargs):
         controller = self.controller
         # BONUS

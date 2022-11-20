@@ -1,6 +1,6 @@
 from rule import MatchPattern
 from app_te import TEApp
-from te_objs import PassByPathObjective, MinLatencyObjective
+from te_objs import PassByPathObjective, MinLatencyObjective, MaxBandwidthObjective
 
 JSON_FILE = './test_case/te.json'
 GRAPH_FILE = './test_case/isp.graphml'
@@ -22,6 +22,12 @@ pattern = MatchPattern(ip_proto=17)
 min_lat_obj = MinLatencyObjective(pattern, src_switch=1, dst_switch=6, symmetric=True)
 app_te.add_min_latency_obj(min_lat_obj)
 
+# Obj 4: All UDP traffic from switch 1 to switch 6 and in the reverse direction should go through max-bandwidth paths
+# We can change the test case if we want later
+pattern = MatchPattern(ip_proto=17)
+max_bw_obj = MaxBandwidthObjective(pattern, src_switch=1, dst_switch=6, symmetric=True)
+app_te.add_max_bandwidth_obj(max_bw_obj)
+
 # Write the objectives (not the OpenFlow rules) to a JSON file
 app_te.to_json(json_file=JSON_FILE)
 
@@ -40,5 +46,13 @@ print()
 # Calculate the OpenFlow rules for MinLatency objectives
 new_app_te.provision_min_latency_paths()
 print('Min-latency Paths Rules:')
+for rule in new_app_te.rules:
+    print(rule)
+
+print()
+
+# Calculate the OpenFlow rules for MaxBandwidth objectives
+new_app_te.provision_max_bandwidth_paths()
+print('Max-bandwidth Paths Rules:')
 for rule in new_app_te.rules:
     print(rule)

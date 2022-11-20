@@ -42,4 +42,9 @@ class L2ConnectivityApp(NetworkApp):
     
     # BONUS: Used to react to changes in the network (the controller notifies the App)
     def on_notified(self, **kwargs):
-        pass
+        print("Recalculating l2 rules...")
+        if self.topo_file:
+            self.topo = nx.read_graphml(self.topo_file)
+        self.send_openflow_rules(delete=True)
+        self.rules = []
+        self.calculate_connectivity_rules()
